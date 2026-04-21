@@ -1,23 +1,34 @@
 <template>
   <div class="note-card">
-    <div class="note-header">
-      <h3>{{ note.title }}</h3>
-      <span :class="['status-badge', note.status]">{{ note.status }}</span>
-    </div>
-    <div class="note-meta">
-      <span v-if="note.category_name" class="category">📁 {{ note.category_name }}</span>
-      <span class="date">📅 {{ new Date(note.created_at).toLocaleDateString() }}</span>
-    </div>
-    
-    <p class="content">{{ note.content }}</p>
+    <div class="card-top">
+      <div class="card-header">
+        <h3 class="card-title">{{ note.title }}</h3>
+        <span :class="['status-chip', note.status]">{{ note.status === 'active' ? 'Activa' : 'Archivada' }}</span>
+      </div>
 
-    <div class="note-tags" v-if="tags.length > 0">
-      <span v-for="tag in tags" :key="tag.id" class="tag">#{{ tag.name }}</span>
+      <div class="card-meta">
+        <span v-if="note.category_name" class="meta-item category-chip">
+          {{ note.category_name }}
+        </span>
+        <span class="meta-item">
+          {{ new Date(note.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) }}
+        </span>
+      </div>
+
+      <p class="card-content" v-if="note.content">{{ note.content }}</p>
+
+      <div class="card-tags" v-if="tags.length > 0">
+        <span v-for="tag in tags" :key="tag.id" class="tag-chip">#{{ tag.name }}</span>
+      </div>
     </div>
 
-    <div class="actions">
-      <button class="btn-edit" @click="$emit('edit', note)">Editar</button>
-      <button class="btn-delete" @click="handleDelete">Eliminar</button>
+    <div class="card-actions">
+      <button class="action-btn action-edit" @click="$emit('edit', note)" id="edit-note-btn">
+        ✏️ Editar
+      </button>
+      <button class="action-btn action-delete" @click="handleDelete" id="delete-note-btn">
+        🗑️ Eliminar
+      </button>
     </div>
   </div>
 </template>
@@ -49,90 +60,186 @@ const handleDelete = async () => {
 
 <style scoped>
 .note-card {
-  background: white;
-  border-radius: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
   padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  transition: transform 0.2s;
-  border: 1px solid var(--color-border);
+  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+  animation: cardAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  position: relative;
+  overflow: hidden;
 }
+
+.note-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), #a78bfa, #ec4899);
+  opacity: 0;
+  transition: opacity var(--transition-base);
+}
+
 .note-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-default);
 }
-.note-header {
+
+.note-card:hover::before {
+  opacity: 1;
+}
+
+@keyframes cardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-top {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Header */
+.card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 0.75rem;
 }
-.note-header h3 {
+
+.card-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
   margin: 0;
-  color: var(--color-primary);
-  font-size: 1.25rem;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
 }
-.status-badge {
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
+
+.status-chip {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-full);
+  font-weight: 600;
   text-transform: uppercase;
-  font-weight: bold;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
-.status-badge.active { background: #e6f4ea; color: #1e8e3e; }
-.status-badge.archived { background: #f1f3f4; color: #5f6368; }
 
-.note-meta {
+.status-chip.active {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.status-chip.archived {
+  background: var(--bg-hover);
+  color: var(--text-muted);
+}
+
+/* Meta */
+.card-meta {
   display: flex;
-  gap: 1rem;
-  font-size: 0.85rem;
-  color: #666;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
-.content {
+.meta-item {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.category-chip {
+  background: var(--info-soft);
+  color: var(--info);
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full);
+  font-weight: 500;
+}
+
+/* Content */
+.card-content {
   margin: 0;
-  color: var(--color-text);
-  line-height: 1.5;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
   white-space: pre-wrap;
-  flex-grow: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.note-tags {
+/* Tags */
+.card-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-}
-.tag {
-  background: #f1f3f4;
-  color: #5f6368;
-  padding: 0.2rem 0.6rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
+  gap: 0.4rem;
 }
 
-.actions {
+.tag-chip {
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Actions */
+.card-actions {
   display: flex;
   gap: 0.5rem;
   justify-content: flex-end;
-  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-subtle);
 }
-button {
-  padding: 0.5rem 1rem;
+
+.action-btn {
+  padding: 0.45rem 0.9rem;
   border: none;
-  border-radius: 4px;
-  cursor: pointer;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-family);
+  font-size: 0.8rem;
   font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
 }
-.btn-edit {
-  background: var(--color-primary);
-  color: white;
+
+.action-edit {
+  background: var(--accent-soft);
+  color: var(--accent);
 }
-.btn-delete {
-  background: #fce8e6;
-  color: var(--color-error);
+
+.action-edit:hover {
+  background: var(--accent);
+  color: #fff;
 }
-.btn-delete:hover {
-  background: #fad2cf;
+
+.action-delete {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.action-delete:hover {
+  background: var(--danger);
+  color: #fff;
 }
 </style>

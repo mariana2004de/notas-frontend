@@ -1,26 +1,45 @@
 <template>
   <div class="note-form">
-    <h3>{{ initialData ? 'Editar Nota' : 'Nueva Nota' }}</h3>
-    
-    <form @submit.prevent="handleSubmit">
+    <div class="form-header">
+      <h3>{{ initialData ? '✏️ Editar Nota' : '✨ Nueva Nota' }}</h3>
+      <button type="button" class="btn-close" @click="$emit('cancel')" id="form-close-btn">✕</button>
+    </div>
+
+    <form @submit.prevent="handleSubmit" id="note-form">
       <div class="form-group">
-        <label>Título *</label>
-        <input type="text" v-model="formData.title" required placeholder="Ej: Comprar víveres" />
+        <label for="note-title">Título <span class="required">*</span></label>
+        <input 
+          type="text" 
+          id="note-title" 
+          v-model="formData.title" 
+          required 
+          placeholder="Ej: Comprar víveres" 
+        />
       </div>
 
       <div class="form-group">
-        <label>Contenido</label>
-        <textarea v-model="formData.content" rows="4" placeholder="Escribe los detalles aquí..."></textarea>
+        <label for="note-content">Contenido</label>
+        <textarea 
+          id="note-content" 
+          v-model="formData.content" 
+          rows="4" 
+          placeholder="Escribe los detalles aquí..."
+        ></textarea>
       </div>
 
       <div class="form-row">
         <div class="form-group half">
-          <label>Categoría</label>
-          <input type="text" v-model="formData.category" placeholder="Ej: Trabajo, Personal" />
+          <label for="note-category">Categoría</label>
+          <input 
+            type="text" 
+            id="note-category" 
+            v-model="formData.category" 
+            placeholder="Ej: Trabajo" 
+          />
         </div>
         <div class="form-group half">
-          <label>Estado</label>
-          <select v-model="formData.status">
+          <label for="note-status">Estado</label>
+          <select id="note-status" v-model="formData.status">
             <option value="active">Activa</option>
             <option value="archived">Archivada</option>
           </select>
@@ -28,13 +47,21 @@
       </div>
 
       <div class="form-group">
-        <label>Etiquetas (separadas por coma)</label>
-        <input type="text" v-model="tagsString" placeholder="Ej: urgente, hogar, finanzas" />
+        <label for="note-tags">Etiquetas <span class="hint">(separadas por coma)</span></label>
+        <input 
+          type="text" 
+          id="note-tags" 
+          v-model="tagsString" 
+          placeholder="Ej: urgente, hogar, finanzas" 
+        />
       </div>
 
-      <div class="actions">
+      <div class="form-actions">
         <button type="button" class="btn-cancel" @click="$emit('cancel')">Cancelar</button>
-        <button type="submit" class="btn-save" :disabled="loading">{{ loading ? 'Guardando...' : 'Guardar' }}</button>
+        <button type="submit" class="btn-save" :disabled="loading" id="save-note-btn">
+          <span v-if="loading" class="btn-spinner"></span>
+          {{ loading ? 'Guardando...' : 'Guardar Nota' }}
+        </button>
       </div>
     </form>
   </div>
@@ -109,67 +136,173 @@ const handleSubmit = async () => {
 
 <style scoped>
 .note-form {
-  background: white;
+  background: var(--bg-elevated);
   padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  border: 1px solid var(--color-border);
-  margin-bottom: 2rem;
-}
-
-h3 {
-  margin-top: 0;
-  color: var(--color-primary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-md);
   margin-bottom: 1.5rem;
 }
 
-.form-group {
-  margin-bottom: 1rem;
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.75rem;
+}
+
+.form-header h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.btn-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-hover);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all var(--transition-fast);
+}
+
+.btn-close:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* Form fields inherit from main.css via .form-group */
+
+.required {
+  color: var(--danger);
+}
+
+.hint {
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: 0.95rem;
+  resize: vertical;
+  min-height: 100px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  outline: none;
+}
+
+textarea::placeholder {
+  color: var(--text-muted);
+}
+
+textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2rem;
 }
 
 .form-row {
   display: flex;
   gap: 1rem;
 }
+
 .half {
   flex: 1;
 }
 
-label {
-  display: block;
-  font-size: 0.9rem;
-  font-weight: 500;
-  margin-bottom: 0.4rem;
-}
-
-input, textarea, select {
-  width: 100%;
-  padding: 0.6rem;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  font-family: inherit;
-}
-
-.actions {
+.form-actions {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   justify-content: flex-end;
-  margin-top: 1.5rem;
+  margin-top: 1.75rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-subtle);
 }
 
-button {
-  padding: 0.6rem 1.2rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-}
+.btn-cancel,
 .btn-save {
-  background: var(--color-primary);
-  color: white;
+  padding: 0.65rem 1.5rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-family);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 }
+
 .btn-cancel {
-  background: #f1f3f4;
-  color: #333;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+}
+
+.btn-cancel:hover {
+  background: var(--bg-input);
+  color: var(--text-primary);
+}
+
+.btn-save {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-save:hover:not(:disabled) {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-glow);
+}
+
+.btn-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 640px) {
+  .note-form {
+    padding: 1.25rem;
+  }
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
 }
 </style>
