@@ -21,4 +21,21 @@ api.interceptors.request.use(
   }
 )
 
+// Interceptor de respuesta — manejo global de errores 401
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      // Solo redirigir si no estamos ya en login/register
+      const path = window.location.pathname
+      if (path !== '/login' && path !== '/register') {
+        window.location.href = '/login'
+      }
+    }
+    return Promise.reject(error)
+  }
+)
+
 export default api
